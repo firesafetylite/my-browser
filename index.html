@@ -1,408 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simple Browser</title>
-<style>
-  * { box-sizing:border-box; font-family:Arial,sans-serif; margin:0; padding:0; border-radius:0; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browser</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── LIGHT ── */
-  body                        { background:#fff; }
-  #controls                   { display:flex; gap:4px; padding:6px; background:#ebebeb; align-items:center; }
-  #controls button            { padding:6px 12px; border:1px solid #ccc; background:#fff; cursor:pointer; font-size:13px; color:#111; }
-  #controls button:hover      { background:#f5f5f5; }
-  #urlBar                     { flex-grow:1; padding:6px 8px; border:1px solid #ccc; font-size:13px; background:#fff; color:#111; outline:none; }
-  #homepage                   { background:#fff; }
-  #homepage h1                { font-size:20px; font-weight:bold; color:#111; margin-bottom:6px; }
-  #homepage > p               { font-size:13px; color:#888; margin-bottom:24px; }
-  .quicklinks                 { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:600px; }
-  .quicklink-btn              { background:#fff; border:1px solid #ddd; color:#111; font-size:13px; padding:12px 16px; width:120px; cursor:pointer; text-align:center; }
-  .quicklink-btn:hover        { background:#f5f5f5; }
-  #errorOverlay               { background:#fff; }
-  #errorOverlay p             { font-size:14px; color:#555; max-width:420px; line-height:1.7; border:1px solid #ddd; padding:20px 26px; }
-  .panel                      { background:#fff; border:1px solid #ddd; }
-  .panel-header               { font-size:11px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; padding:9px 14px; color:#888; border-bottom:1px solid #eee; }
-  .setting-row                { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #f0f0f0; }
-  .setting-label              { font-size:13px; color:#333; }
-  .theme-opt                  { flex:1; padding:7px 4px; cursor:pointer; font-size:12px; text-align:center; background:#fff; border:1px solid #ddd; color:#333; }
-  .theme-opt.active           { background:#111; color:#fff; border-color:#111; }
-  .toggle-slider              { background:#ddd; }
-  .toggle input:checked + .toggle-slider { background:#111; }
-  .bookmark-item              { display:flex; align-items:center; padding:8px 14px; cursor:pointer; font-size:13px; gap:8px; border-bottom:1px solid #f0f0f0; color:#111; }
-  .bookmark-item:hover        { background:#f9f9f9; }
-  .bookmark-del               { color:#ccc; background:none; border:none; cursor:pointer; font-size:13px; padding:2px 6px; flex-shrink:0; }
-  .bookmark-del:hover         { color:#c00; }
-  #bm-add-row                 { padding:10px 14px; display:flex; flex-direction:column; gap:6px; border-top:1px solid #f0f0f0; }
-  #bm-name-input,
-  #bm-url-input               { width:100%; padding:6px 8px; font-size:12px; border:1px solid #ddd; background:#fff; color:#111; outline:none; }
-  #bm-save-btn                { padding:6px 12px; font-size:12px; cursor:pointer; background:#111; color:#fff; border:none; align-self:flex-end; }
-  #bm-save-btn:hover          { background:#333; }
-  #bm-empty                   { font-size:12px; padding:14px; text-align:center; color:#bbb; }
-  .bm-section-title           { font-size:11px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; color:#aaa; padding-bottom:10px; margin-bottom:10px; width:100%; max-width:600px; text-align:left; border-bottom:1px solid #eee; }
-  .bookmarks-grid             { display:flex; flex-wrap:wrap; gap:8px; max-width:600px; width:100%; margin-bottom:24px; justify-content:flex-start; }
-  .bookmark-card              { position:relative; padding:12px 32px 12px 14px; font-size:13px; cursor:pointer; background:#fff; border:1px solid #ddd; color:#111; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; text-align:left; }
-  .bookmark-card:hover        { background:#f5f5f5; }
-  .bookmark-card-del          { position:absolute; top:4px; right:6px; font-size:11px; cursor:pointer; color:#ccc; background:none; border:none; padding:2px 4px; }
-  .bookmark-card-del:hover    { color:#c00; }
-  .hp-divider                 { width:100%; max-width:600px; border:none; border-top:1px solid #eee; margin-bottom:24px; }
-  #moreMenu button            { width:100%; padding:10px 16px; background:#fff; border:none; border-bottom:1px solid #f0f0f0; font-size:13px; color:#111; text-align:left; cursor:pointer; }
-  #moreMenu button:last-child { border-bottom:none; }
-  #moreMenu button:hover      { background:#f5f5f5; }
+    body {
+      font-family: monospace;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-  /* ── DARK ── */
-  body.dark                   { background:#111; }
-  body.dark #controls         { background:#1a1a1a; }
-  body.dark #controls button  { background:#222; border-color:#333; color:#eee; }
-  body.dark #controls button:hover { background:#2a2a2a; }
-  body.dark #urlBar           { background:#222; border-color:#333; color:#eee; }
-  body.dark #homepage         { background:#111; }
-  body.dark #homepage h1      { color:#eee; }
-  body.dark #homepage > p     { color:#666; }
-  body.dark .quicklink-btn    { background:#1a1a1a; border-color:#333; color:#ccc; }
-  body.dark .quicklink-btn:hover { background:#222; }
-  body.dark #errorOverlay     { background:#111; }
-  body.dark #errorOverlay p   { color:#888; border-color:#333; }
-  body.dark .panel            { background:#1a1a1a; border-color:#333; }
-  body.dark .panel-header     { color:#666; border-color:#2a2a2a; }
-  body.dark .setting-row      { border-color:#222; }
-  body.dark .setting-label    { color:#ccc; }
-  body.dark .theme-opt        { background:#1a1a1a; border-color:#333; color:#ccc; }
-  body.dark .theme-opt.active { background:#eee; color:#111; border-color:#eee; }
-  body.dark .toggle-slider    { background:#333; }
-  body.dark .toggle input:checked + .toggle-slider { background:#eee; }
-  body.dark .toggle-slider:before { background:#111; }
-  body.dark .bookmark-item    { color:#ccc; border-color:#222; }
-  body.dark .bookmark-item:hover { background:#222; }
-  body.dark .bookmark-del     { color:#444; }
-  body.dark .bookmark-del:hover { color:#f88; }
-  body.dark #bm-add-row       { border-color:#222; }
-  body.dark #bm-name-input,
-  body.dark #bm-url-input     { background:#222; border-color:#333; color:#eee; }
-  body.dark #bm-save-btn      { background:#eee; color:#111; }
-  body.dark #bm-save-btn:hover { background:#ccc; }
-  body.dark #bm-empty         { color:#444; }
-  body.dark .bm-section-title { color:#555; border-color:#222; }
-  body.dark .bookmark-card    { background:#1a1a1a; border-color:#333; color:#ccc; }
-  body.dark .bookmark-card:hover { background:#222; }
-  body.dark .bookmark-card-del { color:#444; }
-  body.dark .bookmark-card-del:hover { color:#f88; }
-  body.dark .hp-divider       { border-color:#222; }
-  body.dark #moreMenu button  { background:#1a1a1a; border-color:#222; color:#ccc; }
-  body.dark #moreMenu button:hover { background:#222; }
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      background: #ddd;
+      border-bottom: 1px solid #aaa;
+      flex-shrink: 0;
+    }
 
-  /* ── VIBRANT LIGHT ── */
-  body.vibrant-light                   { background:#f4f4f4; }
-  body.vibrant-light #controls         { background:#111; }
-  body.vibrant-light #controls button  { background:#222; border:none; color:#fff; }
-  body.vibrant-light #controls button:hover { background:#333; }
-  body.vibrant-light #urlBar           { background:#fff; border:none; border-bottom:2px solid #111; color:#111; }
-  body.vibrant-light #homepage         { background:#f4f4f4; }
-  body.vibrant-light #homepage h1      { color:#111; }
-  body.vibrant-light #homepage > p     { color:#777; }
-  body.vibrant-light .quicklink-btn    { background:#fff; border:none; border-bottom:2px solid #111; color:#111; padding:14px 16px; width:130px; }
-  body.vibrant-light .quicklink-btn:hover { background:#eee; }
-  body.vibrant-light #errorOverlay     { background:#f4f4f4; }
-  body.vibrant-light #errorOverlay p   { border:none; border-left:3px solid #111; background:#fff; color:#333; padding:18px 22px; }
-  body.vibrant-light .panel            { background:#fff; border:none; border-left:3px solid #111; }
-  body.vibrant-light .panel-header     { color:#111; border-color:#eee; }
-  body.vibrant-light .setting-row      { border-color:#f0f0f0; }
-  body.vibrant-light .setting-label    { color:#333; }
-  body.vibrant-light .theme-opt        { background:#f4f4f4; border:1px solid #ddd; color:#333; }
-  body.vibrant-light .theme-opt.active { background:#111; color:#fff; border-color:#111; }
-  body.vibrant-light .toggle-slider    { background:#ddd; }
-  body.vibrant-light .toggle input:checked + .toggle-slider { background:#111; }
-  body.vibrant-light .bookmark-item    { color:#111; border-color:#eee; }
-  body.vibrant-light .bookmark-item:hover { background:#f4f4f4; }
-  body.vibrant-light #bm-name-input,
-  body.vibrant-light #bm-url-input     { border-color:#ddd; background:#f4f4f4; color:#111; }
-  body.vibrant-light #bm-save-btn      { background:#111; color:#fff; }
-  body.vibrant-light .bm-section-title { color:#888; border-color:#ddd; }
-  body.vibrant-light .bookmark-card    { background:#fff; border:none; border-left:3px solid #111; color:#111; }
-  body.vibrant-light .bookmark-card:hover { background:#eee; }
-  body.vibrant-light .hp-divider       { border-color:#ddd; }
-  body.vibrant-light #moreMenu button  { background:#fff; border-color:#eee; color:#111; }
-  body.vibrant-light #moreMenu button:hover { background:#f4f4f4; }
+    #toolbar button {
+      font-family: monospace;
+      font-size: 13px;
+      padding: 3px 8px;
+      background: #eee;
+      border: 1px solid #999;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    #toolbar button:hover { background: #e0e0e0; }
+    #toolbar button:active { background: #ccc; }
 
-  /* ── VIBRANT DARK ── */
-  body.vibrant-dark                   { background:#0a0a0a; }
-  body.vibrant-dark #controls         { background:#eee; }
-  body.vibrant-dark #controls button  { background:#111; border:none; color:#eee; }
-  body.vibrant-dark #controls button:hover { background:#222; }
-  body.vibrant-dark #urlBar           { background:#eee; border:none; border-bottom:2px solid #111; color:#111; }
-  body.vibrant-dark #homepage         { background:#0a0a0a; }
-  body.vibrant-dark #homepage h1      { color:#eee; }
-  body.vibrant-dark #homepage > p     { color:#555; }
-  body.vibrant-dark .quicklink-btn    { background:#111; border:none; border-bottom:2px solid #eee; color:#eee; padding:14px 16px; width:130px; }
-  body.vibrant-dark .quicklink-btn:hover { background:#1a1a1a; }
-  body.vibrant-dark #errorOverlay     { background:#0a0a0a; }
-  body.vibrant-dark #errorOverlay p   { border:none; border-left:3px solid #eee; background:#111; color:#aaa; padding:18px 22px; }
-  body.vibrant-dark .panel            { background:#111; border:none; border-left:3px solid #eee; }
-  body.vibrant-dark .panel-header     { color:#eee; border-color:#222; }
-  body.vibrant-dark .setting-row      { border-color:#1a1a1a; }
-  body.vibrant-dark .setting-label    { color:#ccc; }
-  body.vibrant-dark .theme-opt        { background:#0a0a0a; border:1px solid #333; color:#ccc; }
-  body.vibrant-dark .theme-opt.active { background:#eee; color:#111; border-color:#eee; }
-  body.vibrant-dark .toggle-slider    { background:#333; }
-  body.vibrant-dark .toggle input:checked + .toggle-slider { background:#eee; }
-  body.vibrant-dark .toggle-slider:before { background:#0a0a0a; }
-  body.vibrant-dark .bookmark-item    { color:#ccc; border-color:#1a1a1a; }
-  body.vibrant-dark .bookmark-item:hover { background:#1a1a1a; }
-  body.vibrant-dark .bookmark-del     { color:#444; }
-  body.vibrant-dark .bookmark-del:hover { color:#f88; }
-  body.vibrant-dark #bm-name-input,
-  body.vibrant-dark #bm-url-input     { border-color:#333; background:#0a0a0a; color:#eee; }
-  body.vibrant-dark #bm-save-btn      { background:#eee; color:#111; }
-  body.vibrant-dark #bm-save-btn:hover { background:#ccc; }
-  body.vibrant-dark #bm-empty         { color:#333; }
-  body.vibrant-dark .bm-section-title { color:#444; border-color:#1a1a1a; }
-  body.vibrant-dark .bookmark-card    { background:#111; border:none; border-left:3px solid #eee; color:#ccc; }
-  body.vibrant-dark .bookmark-card:hover { background:#1a1a1a; }
-  body.vibrant-dark .bookmark-card-del { color:#333; }
-  body.vibrant-dark .bookmark-card-del:hover { color:#f88; }
-  body.vibrant-dark .hp-divider       { border-color:#1a1a1a; }
-  body.vibrant-dark #moreMenu button  { background:#111; border-color:#1a1a1a; color:#ccc; }
-  body.vibrant-dark #moreMenu button:hover { background:#1a1a1a; }
+    #url-bar {
+      flex: 1;
+      font-family: monospace;
+      font-size: 13px;
+      padding: 4px 6px;
+      border: 1px solid #999;
+      border-radius: 2px;
+      background: #fff;
+      outline: none;
+    }
+    #url-bar:focus { border-color: #555; }
 
-  /* ── SHARED LAYOUT ── */
-  #frameWrapper { position:relative; width:100%; height:calc(100vh - 44px); }
-  iframe { width:100%; height:100%; border:none; background:#fff; }
+    #go-btn {
+      font-family: monospace;
+      font-size: 13px;
+      padding: 4px 10px;
+      background: #eee;
+      border: 1px solid #999;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    #go-btn:hover { background: #e0e0e0; }
 
-  #homepage { display:flex; position:absolute; top:0; left:0; width:100%; height:100%; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:40px; overflow-y:auto; }
-  #homepage.hidden { display:none; }
+    #status-bar {
+      font-family: monospace;
+      font-size: 11px;
+      padding: 2px 8px;
+      background: #ddd;
+      border-bottom: 1px solid #bbb;
+      color: #444;
+      height: 20px;
+      flex-shrink: 0;
+    }
 
-  #errorOverlay { display:none; position:absolute; top:0; left:0; width:100%; height:100%; justify-content:center; align-items:center; text-align:center; padding:40px; }
-  #errorOverlay.visible { display:flex; }
+    #frame-wrapper {
+      flex: 1;
+      background: #fff;
+      position: relative;
+    }
 
-  .panel { display:none; position:absolute; top:44px; right:0; width:260px; z-index:999; max-height:calc(100vh - 60px); overflow-y:auto; }
-  .panel.open { display:block; }
+    #browser-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
 
-  #moreMenu { display:none; position:absolute; top:44px; right:0; width:160px; z-index:1000; background:#fff; border:1px solid #ddd; }
-  #moreMenu.open { display:block; }
+    #home-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: #f8f8f8;
+    }
 
-  .theme-options { display:flex; gap:6px; flex-wrap:wrap; width:100%; }
+    #home-screen h1 {
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: normal;
+      color: #333;
+    }
 
-  .toggle { position:relative; width:36px; height:20px; flex-shrink:0; }
-  .toggle input { opacity:0; width:0; height:0; }
-  .toggle-slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; transition:background 0.15s; }
-  .toggle-slider:before { content:""; position:absolute; width:14px; height:14px; left:3px; bottom:3px; background:#fff; transition:transform 0.15s; }
-  .toggle input:checked + .toggle-slider:before { transform:translateX(16px); }
-</style>
+    #home-search {
+      display: flex;
+      gap: 6px;
+    }
+
+    #home-input {
+      font-family: monospace;
+      font-size: 14px;
+      padding: 6px 10px;
+      border: 1px solid #999;
+      border-radius: 2px;
+      width: 320px;
+      outline: none;
+    }
+    #home-input:focus { border-color: #555; }
+
+    #home-go {
+      font-family: monospace;
+      font-size: 14px;
+      padding: 6px 12px;
+      background: #eee;
+      border: 1px solid #999;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    #home-go:hover { background: #e0e0e0; }
+
+    #error-msg {
+      font-family: monospace;
+      font-size: 12px;
+      color: #c00;
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-<div id="controls">
-  <button id="backBtn">&lt;</button>
-  <button id="forwardBtn">&gt;</button>
-  <button id="refreshBtn">Refresh</button>
-  <button id="homeBtn">Home</button>
-  <input id="urlBar" type="text" placeholder="Enter a URL or search Wikipedia">
-  <button id="goBtn">Go</button>
-  <button id="moreBtn">More</button>
+<div id="toolbar">
+  <button id="back-btn" title="Back">&#8592;</button>
+  <button id="fwd-btn" title="Forward">&#8594;</button>
+  <button id="reload-btn" title="Reload">&#8635;</button>
+  <button id="home-btn" title="Home">&#8962;</button>
+  <input id="url-bar" type="text" placeholder="Enter URL or search..." spellcheck="false" />
+  <button id="go-btn">Go</button>
 </div>
 
-<div id="frameWrapper">
-  <iframe id="browserFrame"></iframe>
+<div id="status-bar" id="status"></div>
 
-  <div id="homepage">
-    <h1>Simple Browser</h1>
-    <p>Enter a URL above, search Wikipedia, or pick a site below.</p>
-
-    <div id="hp-bookmarks-section" style="display:none; width:100%; max-width:600px; text-align:left;">
-      <div class="bm-section-title">Bookmarks</div>
-      <div id="hp-bookmarks-grid" class="bookmarks-grid"></div>
-      <hr class="hp-divider">
+<div id="frame-wrapper">
+  <div id="home-screen">
+    <h1>Browser</h1>
+    <div id="home-search">
+      <input id="home-input" type="text" placeholder="Enter URL or search..." spellcheck="false" autofocus />
+      <button id="home-go">Go</button>
     </div>
-
-    <div class="quicklinks">
-      <button class="quicklink-btn" onclick="navigate('https://www.freezenova.com')">FreezeNova</button>
-      <button class="quicklink-btn" onclick="navigate('https://en.wikipedia.org')">Wikipedia</button>
-      <button class="quicklink-btn" onclick="navigate('https://scratch.mit.edu')">Scratch</button>
-      <button class="quicklink-btn" onclick="navigate('https://www.coolmathgames.com')">Cool Math</button>
-      <button class="quicklink-btn" onclick="navigate('https://archive.org')">Archive.org</button>
-      <button class="quicklink-btn" onclick="navigate('https://www.bbc.com/news')">BBC News</button>
-    </div>
+    <span id="error-msg"></span>
   </div>
-
-  <div id="errorOverlay">
-    <p>Uh Oh! Looks like this website isn't yet allowed for this browser. Try another website, or search something up in Wikipedia.</p>
-  </div>
-
-  <div id="moreMenu">
-    <button id="openBookmarksBtn">Bookmarks</button>
-    <button id="openSettingsBtn">Settings</button>
-  </div>
-
-  <div id="bookmarksPanel" class="panel">
-    <div class="panel-header">Bookmarks</div>
-    <div id="bm-list"></div>
-    <div id="bm-add-row">
-      <input id="bm-name-input" type="text" placeholder="Name">
-      <input id="bm-url-input" type="text" placeholder="URL (blank = current page)">
-      <button id="bm-save-btn">Add Bookmark</button>
-    </div>
-  </div>
-
-  <div id="settingsPanel" class="panel">
-    <div class="panel-header">Settings</div>
-    <div class="setting-row">
-      <span class="setting-label">IFrame Check</span>
-      <label class="toggle">
-        <input type="checkbox" id="iframeCheckToggle" checked>
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-    <div class="setting-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
-      <span class="setting-label">Theme</span>
-      <div class="theme-options">
-        <button class="theme-opt active" onclick="setTheme('light')">Light</button>
-        <button class="theme-opt" onclick="setTheme('dark')">Dark</button>
-        <button class="theme-opt" onclick="setTheme('vibrant-light')">Vibrant Light</button>
-        <button class="theme-opt" onclick="setTheme('vibrant-dark')">Vibrant Dark</button>
-      </div>
-    </div>
-  </div>
+  <iframe id="browser-frame" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals" style="display:none;"></iframe>
 </div>
 
+<script src="uv.bundle.js"></script>
+<script src="uv.config.js"></script>
 <script>
-const frame          = document.getElementById('browserFrame');
-const urlBar         = document.getElementById('urlBar');
-const errorOverlay   = document.getElementById('errorOverlay');
-const homepage       = document.getElementById('homepage');
-const settingsPanel  = document.getElementById('settingsPanel');
-const bookmarksPanel = document.getElementById('bookmarksPanel');
-const moreMenu       = document.getElementById('moreMenu');
-const iframeCheckToggle = document.getElementById('iframeCheckToggle');
-const bmList         = document.getElementById('bm-list');
-const bmNameInput    = document.getElementById('bm-name-input');
-const bmUrlInput     = document.getElementById('bm-url-input');
-const hpSection      = document.getElementById('hp-bookmarks-section');const hpGrid         = document.getElementById('hp-bookmarks-grid');
-
-let historyStack = [], currentIndex = -1, iframeCheckEnabled = true, bookmarks = [];
-const PROXY = 'https://feminist-eveleen-firesafetylite-cc4179f4.koyeb.app/service/';
-const themes = ['dark','vibrant-light','vibrant-dark'];
-
-function saveSettings() {
-  localStorage.setItem('sb_iframeCheck', iframeCheckEnabled ? '1' : '0');
-  localStorage.setItem('sb_theme', document.body.dataset.theme || 'light');
-}
-
-function loadSettings() {
-  const t = localStorage.getItem('sb_theme') || 'light';
-  const c = localStorage.getItem('sb_iframeCheck');
-  iframeCheckEnabled = c === null ? true : c === '1';
-  iframeCheckToggle.checked = iframeCheckEnabled;
-  setTheme(t, false);
-}
-
-function setTheme(theme, save = true) {
-  document.body.classList.remove(...themes);
-  if (theme !== 'light') document.body.classList.add(theme);
-  document.body.dataset.theme = theme;
-  document.querySelectorAll('.theme-opt').forEach(b => {
-    b.classList.toggle('active', b.textContent.toLowerCase().replace(/\s/g,'') === theme.replace(/-/g,''));
-  });
-  if (save) saveSettings();
-}
-
-function loadBookmarks() {
-  try { bookmarks = JSON.parse(localStorage.getItem('sb_bookmarks') || '[]'); } catch { bookmarks = []; }
-  renderBmPanel(); renderBmHomepage();
-}
-
-function saveBookmarks() { localStorage.setItem('sb_bookmarks', JSON.stringify(bookmarks)); }
-
-function addBookmark() {
-  let name = bmNameInput.value.trim(), url = bmUrlInput.value.trim();
-  if (!url) url = urlBar.value.trim();
-  if (!url) return;
-  if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-  if (!name) { try { name = new URL(url).hostname.replace('www.',''); } catch { name = url; } }
-  bookmarks.push({ name, url });
-  saveBookmarks(); renderBmPanel(); renderBmHomepage();
-  bmNameInput.value = ''; bmUrlInput.value = '';
-}
-
-function deleteBookmark(i) {
-  bookmarks.splice(i, 1);
-  saveBookmarks(); renderBmPanel(); renderBmHomepage();
-}
-
-function renderBmPanel() {
-  bmList.innerHTML = bookmarks.length === 0
-    ? '<div id="bm-empty">No bookmarks yet.</div>'
-    : bookmarks.map((b, i) => `
-        <div class="bookmark-item">
-          <span class="bookmark-item-name" style="flex-grow:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="navigate('${esc(b.url)}');closeAll();">${esc(b.name)}</span>
-          <button class="bookmark-del" onclick="deleteBookmark(${i})">x</button>
-        </div>`).join('');
-}
-
-function renderBmHomepage() {
-  if (!bookmarks.length) { hpSection.style.display = 'none'; return; }
-  hpSection.style.display = 'block';
-  hpGrid.innerHTML = bookmarks.map((b, i) => `
-    <button class="bookmark-card" onclick="navigate('${esc(b.url)}')" title="${esc(b.url)}">
-      ${esc(b.name)}
-      <span class="bookmark-card-del" onclick="event.stopPropagation();deleteBookmark(${i})">x</span>
-    </button>`).join('');
-}
-
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
-function closeAll() { settingsPanel.classList.remove('open'); bookmarksPanel.classList.remove('open'); moreMenu.classList.remove('open'); }
-function showHomepage() { homepage.classList.remove('hidden'); frame.src='about:blank'; urlBar.value=''; closeAll(); }
-function hideHomepage() { homepage.classList.add('hidden'); }
-function loadPage(url) {
-  hideHomepage(); errorOverlay.classList.remove('visible'); closeAll();
-  const proxied = PROXY + url;
-  frame.src = proxied;
-  urlBar.value = url;
-}
-
-function navigate(input) {
-  let url = input.trim();
-  if (!url) return;
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    if (/\.[a-z]{2,}/i.test(url)) url = 'https://' + url;
-    else url = 'https://en.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(url);
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(reg => setStatus('Service worker ready.'))
+      .catch(err => setStatus('SW error: ' + err.message));
+  } else {
+    setStatus('Service workers not supported.');
   }
-  historyStack = historyStack.slice(0, currentIndex + 1);
-  historyStack.push(url); currentIndex++;
-  loadPage(url);
-}
 
-document.getElementById('goBtn').onclick      = () => navigate(urlBar.value);
-urlBar.addEventListener('keydown', e => { if (e.key==='Enter') navigate(urlBar.value); });
-document.getElementById('backBtn').onclick    = () => { if (currentIndex>0) { currentIndex--; loadPage(historyStack[currentIndex]); } };
-document.getElementById('forwardBtn').onclick = () => { if (currentIndex<historyStack.length-1) { currentIndex++; loadPage(historyStack[currentIndex]); } };
-document.getElementById('refreshBtn').onclick = () => { if (currentIndex>=0) loadPage(historyStack[currentIndex]); };
-document.getElementById('homeBtn').onclick    = () => showHomepage();
-document.getElementById('moreBtn').onclick    = (e) => { e.stopPropagation(); settingsPanel.classList.remove('open'); bookmarksPanel.classList.remove('open'); moreMenu.classList.toggle('open'); };
-document.getElementById('openBookmarksBtn').onclick = (e) => { e.stopPropagation(); moreMenu.classList.remove('open'); settingsPanel.classList.remove('open'); bookmarksPanel.classList.toggle('open'); };
-document.getElementById('openSettingsBtn').onclick  = (e) => { e.stopPropagation(); moreMenu.classList.remove('open'); bookmarksPanel.classList.remove('open'); settingsPanel.classList.toggle('open'); };
-document.getElementById('bm-save-btn').onclick = addBookmark;
-bmUrlInput.addEventListener('keydown', e => { if (e.key==='Enter') addBookmark(); });
-iframeCheckToggle.addEventListener('change', () => { iframeCheckEnabled = iframeCheckToggle.checked; saveSettings(); });
+  const frame      = document.getElementById('browser-frame');
+  const homeScreen = document.getElementById('home-screen');
+  const urlBar     = document.getElementById('url-bar');
+  const statusBar  = document.querySelector('#status-bar');
+  const errorMsg   = document.getElementById('error-msg');
 
-document.addEventListener('click', (e) => {
-  if (!moreMenu.contains(e.target) && e.target.id !== 'moreBtn') moreMenu.classList.remove('open');
-  if (!settingsPanel.contains(e.target) && e.target.id !== 'openSettingsBtn') settingsPanel.classList.remove('open');
-  if (!bookmarksPanel.contains(e.target) && e.target.id !== 'openBookmarksBtn') bookmarksPanel.classList.remove('open');
-});
+  function setStatus(msg) {
+    statusBar.textContent = msg;
+  }
 
-frame.addEventListener('load', () => {
-  if (!homepage.classList.contains('hidden')) return;
-  if (!iframeCheckEnabled) return;
-  try {
-    const loc = frame.contentWindow.location.href;
-    if (loc === 'about:blank') errorOverlay.classList.add('visible');
-    else { errorOverlay.classList.remove('visible'); urlBar.value = loc; }
-  } catch { errorOverlay.classList.remove('visible'); }
-});
+  function normalizeURL(input) {
+    input = input.trim();
+    if (!input) return null;
+    // If it looks like a URL, ensure it has a protocol
+    if (/^(https?:\/\/)/i.test(input)) return input;
+    // If it has a dot and no spaces, treat as URL
+    if (/^[^\s]+\.[^\s]+$/.test(input)) return 'https://' + input;
+    // Otherwise, search via Google
+    return 'https://www.google.com/search?q=' + encodeURIComponent(input);
+  }
 
-loadSettings();
-loadBookmarks();
+  function navigate(input) {
+    errorMsg.style.display = 'none';
+    const url = normalizeURL(input);
+    if (!url) return;
+
+    urlBar.value = url;
+
+    // Check if Ultraviolet is available
+    if (typeof __uv$config === 'undefined') {
+      errorMsg.textContent = 'Ultraviolet not loaded. Make sure uv/uv.bundle.js and uv/uv.config.js are present.';
+      errorMsg.style.display = 'block';
+      setStatus('Error: UV not loaded.');
+      return;
+    }
+
+    const proxied = __uv$config.prefix + __uv$config.encodeUrl(url);
+
+    homeScreen.style.display = 'none';
+    frame.style.display = 'block';
+    frame.src = proxied;
+    setStatus('Loading: ' + url);
+
+    frame.onload = () => setStatus(url);
+  }
+
+  // Toolbar buttons
+  document.getElementById('back-btn').onclick   = () => { try { frame.contentWindow.history.back(); } catch(e){} };
+  document.getElementById('fwd-btn').onclick    = () => { try { frame.contentWindow.history.forward(); } catch(e){} };
+  document.getElementById('reload-btn').onclick = () => { try { frame.contentWindow.location.reload(); } catch(e) { frame.src = frame.src; } };
+  document.getElementById('home-btn').onclick   = () => {
+    frame.style.display = 'none';
+    frame.src = '';
+    urlBar.value = '';
+    homeScreen.style.display = 'flex';
+    setStatus('');
+  };
+
+  document.getElementById('go-btn').onclick = () => navigate(urlBar.value);
+  urlBar.addEventListener('keydown', e => { if (e.key === 'Enter') navigate(urlBar.value); });
+
+  document.getElementById('home-go').onclick = () => navigate(document.getElementById('home-input').value);
+  document.getElementById('home-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') navigate(document.getElementById('home-input').value);
+  });
 </script>
 </body>
 </html>
